@@ -6,6 +6,12 @@ Usage
 -----
 Can be run from the commandline (CLI)
     
-    python main.py countries
+    usage: main.py [-h] countries [countries ...]
     
-countries: a list of countries separated by spaces. At least one country must be provided.
+    Generate graphs based on COVID-19 data from ECDC
+    
+    positional arguments:
+      countries   Countries for which graph's should be created
+    
+    optional arguments:
+      -h, --help  show this help message and exit

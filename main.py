@@ -2,6 +2,7 @@
 
 import argparse
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import pandas as pd
 
 ECDC_DATA_URL = 'https://opendata.ecdc.europa.eu/covid19/casedistribution/csv'
@@ -94,31 +95,24 @@ def main():
 
     data = import_ecdc_data()
 
+    fig, axs = plt.subplots(2, 1)
+    fig.suptitle('COVID-19 Analysis')
+
     # Cases in previous week per 100k people
     for country in countries:
         my_country = Country(data, country)
-        my_country.cases_by_population().plot(label=country)
+        axs[0].plot(my_country.cases_by_population())
+        axs[1].plot(my_country.r_number(4, 7)[-100:])
 
-    plt.title('Cases in previous week per 100k people')
-    plt.legend()
-    plt.show()
+    axs[0].set_title('Cases in previous week per 100k people')
+    axs[1].set_title('R-Number')
 
-    # Active cases
-    for country in countries:
-        my_country = Country(data, country)
-        my_country.active_cases().plot(label=country)
+    for ax in axs.flat:
+        ax.legend(countries, loc='upper left')
 
-    plt.title('Active cases')
-    plt.legend()
-    plt.show()
+    axs[0].xaxis.set_major_formatter(mdates.DateFormatter('%b'))
+    axs[1].xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
 
-    # R-Number
-    for country in countries:
-        my_country = Country(data, country)
-        my_country.r_number(4, 7)[-100:].plot(label=country)
-
-    plt.title('R-Number')
-    plt.legend()
     plt.show()
 
 
