@@ -1,8 +1,12 @@
 # TODO module documentation
 
 import argparse
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+from bokeh.models import HoverTool
+from bokeh.models.annotations import Span
+from bokeh.palettes import Category10
+from bokeh.plotting import figure, output_file, show
+from bokeh.layouts import layout
+
 import pandas as pd
 
 ECDC_DATA_URL = 'https://opendata.ecdc.europa.eu/covid19/casedistribution/csv'
@@ -95,25 +99,47 @@ def main():
 
     data = import_ecdc_data()
 
-    fig, axs = plt.subplots(2, 1)
-    fig.suptitle('COVID-19 Analysis')
+    # BOKEH ----------------------------
 
-    # Cases in previous week per 100k people
-    for country in countries:
+    # output to static HTML file
+    output_file("output/lines.html")
+
+    colours = Category10[max(len(countries), 3)]  # Category10 does not work with an input of <3
+    if len(countries) > len(colours):
+        raise ValueError(f"The maximum number of countries which can be plotted is {len(colours)}")
+
+    # 1. Create the figures
+    hover1 = HoverTool(tooltips=[('date', '$x{%F}'), ('value', '$y{0,0}')], formatters={'$x': 'datetime'})
+    hover2 = HoverTool(tooltips=[('date', '$x{%F}'), ('value', '$y')], formatters={'$x': 'datetime'})
+
+    p1 = figure(title="Cases in previous week per 100k people", tools=[hover1], x_axis_type="datetime",
+                x_axis_label='date', y_axis_label='# Cases')
+    p2 = figure(title="R-Number", tools=[hover2], x_axis_type="datetime", x_axis_label='date', y_axis_label='R-Number')
+
+    p1.xaxis.formatter.months = '%b-%y'
+    p2.xaxis.formatter.days = '%d-%b'
+
+    # 2. Create glyphs
+
+    for i, country in enumerate(countries):
         my_country = Country(data, country)
-        axs[0].plot(my_country.cases_by_population())
-        axs[1].plot(my_country.r_number(4, 7)[-100:])
 
-    axs[0].set_title('Cases in previous week per 100k people')
-    axs[1].set_title('R-Number')
+        s1 = my_country.cases_by_population()
+        p1.line(s1.index, s1.values, legend_label=country, line_width=2, line_color=colours[i])
+        
+        s2 = my_country.r_number(4, 7)[-100:]
+        p2.line(s2.index, s2.values, legend_label=country, line_width=2, line_color=colours[i])
 
-    for ax in axs.flat:
-        ax.legend(countries, loc='upper left')
+    p1.legend.location = 'top_left'
+    p2.legend.location = 'top_left'
 
-    axs[0].xaxis.set_major_formatter(mdates.DateFormatter('%b'))
-    axs[1].xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+    r_one = Span(location=1, dimension='width', line_color='maroon', line_width=2)
+    p2.add_layout(r_one)
 
-    plt.show()
+    # 3. Show the results
+    show(layout([
+        [p1, p2]
+    ]))
 
 
 if __name__ == '__main__':
