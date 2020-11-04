@@ -1,12 +1,11 @@
 # TODO module documentation
 
 import argparse
-from bokeh.models import HoverTool
+from bokeh.layouts import layout
+from bokeh.models import HoverTool, NumeralTickFormatter
 from bokeh.models.annotations import Span
 from bokeh.palettes import Category10
 from bokeh.plotting import figure, output_file, show
-from bokeh.layouts import layout
-
 import pandas as pd
 
 ECDC_DATA_URL = 'https://opendata.ecdc.europa.eu/covid19/casedistribution/csv'
@@ -109,36 +108,49 @@ def main():
         raise ValueError(f"The maximum number of countries which can be plotted is {len(colours)}")
 
     # 1. Create the figures
-    hover1 = HoverTool(tooltips=[('date', '$x{%F}'), ('value', '$y{0,0}')], formatters={'$x': 'datetime'})
-    hover2 = HoverTool(tooltips=[('date', '$x{%F}'), ('value', '$y')], formatters={'$x': 'datetime'})
 
-    p1 = figure(title="Cases in previous week per 100k people", tools=[hover1], x_axis_type="datetime",
-                x_axis_label='date', y_axis_label='# Cases')
-    p2 = figure(title="R-Number", tools=[hover2], x_axis_type="datetime", x_axis_label='date', y_axis_label='R-Number')
-
+    # Graph 1
+    hover1 = HoverTool(tooltips=[('date', '$x{%F}'), ('cases', '$y{0,0}k')], formatters={'$x': 'datetime'})
+    p1 = figure(width=1200, height=400, title="Active cases", tools=[hover1], x_axis_type="datetime",
+                x_axis_label='date', y_axis_label="thousands of cases")
     p1.xaxis.formatter.months = '%b-%y'
+
+    # Graph 2
+    hover2 = HoverTool(tooltips=[('date', '$x{%F}'), ('cases', '$y{0,0}')], formatters={'$x': 'datetime'})
+    p2 = figure(width=600, height=400, title="Cases in previous week per 100k people", tools=[hover2],
+                x_axis_type="datetime", x_axis_label='date', y_axis_label='cases')
     p2.xaxis.formatter.days = '%d-%b'
+
+    # Graph 3
+    hover3 = HoverTool(tooltips=[('date', '$x{%F}'), ('r-number', '$y')], formatters={'$x': 'datetime'})
+    p3 = figure(width=600, height=400, title="R-Number", tools=[hover3], x_axis_type="datetime", x_axis_label='date',
+                y_axis_label='r-number')
+    p3.xaxis.formatter.days = '%d-%b'
 
     # 2. Create glyphs
 
     for i, country in enumerate(countries):
         my_country = Country(data, country)
 
-        s1 = my_country.cases_by_population()
+        s1 = my_country.active_cases() / 1000
         p1.line(s1.index, s1.values, legend_label=country, line_width=2, line_color=colours[i])
-        
-        s2 = my_country.r_number(4, 7)[-100:]
-        p2.line(s2.index, s2.values, legend_label=country, line_width=2, line_color=colours[i])
 
-    p1.legend.location = 'top_left'
-    p2.legend.location = 'top_left'
+        s2 = my_country.cases_by_population()[-60:]
+        p2.line(s2.index, s2.values, legend_label=country, line_width=2, line_color=colours[i])
+        
+        s3 = my_country.r_number(4, 7)[-60:]
+        p3.line(s3.index, s3.values, legend_label=country, line_width=2, line_color=colours[i])
+
+    for p in [p1, p2, p3]:
+        p.legend.location = 'top_left'
 
     r_one = Span(location=1, dimension='width', line_color='maroon', line_width=2)
-    p2.add_layout(r_one)
+    p3.add_layout(r_one)
 
     # 3. Show the results
     show(layout([
-        [p1, p2]
+        [p1],
+        [p2, p3]
     ]))
 
 

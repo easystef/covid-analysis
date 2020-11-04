@@ -15,3 +15,11 @@ Can be run from the commandline (CLI)
     
     optional arguments:
       -h, --help  show this help message and exit
+
+Changelog
+---------
+v1.0
+* Initial version
+
+v1.1
+* New version using Bokeh charts (replacing Matlplotlib)
