@@ -4,6 +4,7 @@ import requests
 RKI_URL = 'https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Risikogebiete_neu.html'
 
 
+# THIS CODE IS NOT USED YET BY THE APPLICATION!!!
 def main():
 
     rki = requests.get(RKI_URL)
@@ -62,7 +63,6 @@ def parse_date(date):
 
 if __name__ == '__main__':
     main()
-
 
 # TODO split country name from bit in parenthesis
 # TODO translate

@@ -1,6 +1,5 @@
 # TODO module documentation
 
-import argparse
 from bokeh.layouts import layout
 from bokeh.models import HoverTool
 from bokeh.models.annotations import Span
@@ -84,25 +83,19 @@ class Country:
         return self.cases.rolling(7).sum() / (self.population / 100000)
 
 
-def main():
-    """Generates graphs showing different aspects of the COVID-19 data.
-
-    :return: None
+def make_graphs(data, countries, file_name):
     """
-
-    parser = argparse.ArgumentParser(description="Generate graphs based on COVID-19 data from ECDC")
-    parser.add_argument('countries', type=str, help="Countries for which graph's should be created", nargs='+')
-
-    args = parser.parse_args()
-
-    countries = tuple(args.countries)
-
-    data = import_ecdc_data()
+    # TODO write
+    :param data:
+    :param countries:
+    :param file_name:
+    :return:
+    """
 
     # BOKEH ----------------------------
 
     # output to static HTML file
-    output_file("output/covid-graph.html")
+    output_file(file_name)
 
     colours = Category10[max(len(countries), 3)]  # Category10 does not work with an input of <3
     if len(countries) > len(colours):
@@ -175,6 +168,3 @@ def main():
         [cases, deaths]
     ]))
 
-
-if __name__ == '__main__':
-    main()

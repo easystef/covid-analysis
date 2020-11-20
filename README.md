@@ -6,20 +6,21 @@ Usage
 -----
 Can be run from the commandline (CLI)
     
-    usage: main.py [-h] countries [countries ...]
-    
+    usage: python3 -m covid19 [-h] countries [countries ...]
+
     Generate graphs based on COVID-19 data from ECDC
-    
+
     positional arguments:
-      countries   Countries for which graph's should be created
-    
+    countries   Countries for which graph's should be created
+
     optional arguments:
       -h, --help  show this help message and exit
 
 Changelog
 ---------
-v1.0
+v1.0.0
 * Initial version
 
-v1.1
+v1.1.0
 * New version using Bokeh charts (replacing Matlplotlib)
+* Structured to be used as a local package
