@@ -7,22 +7,22 @@ from bokeh.palettes import Category10
 from bokeh.plotting import figure, output_file, show
 import pandas as pd
 
-ECDC_DATA_URL = 'https://opendata.ecdc.europa.eu/covid19/casedistribution/csv'
+OWID_DATA_URL = 'https://covid.ourworldindata.org/data/owid-covid-data.csv'
 
 
-def import_ecdc_data():
-    """Read data for ECDC
+def import_owid_data():
+    """Reads coronavirus data for Our World In Data
 
     Loads the data and formats the dates
 
     :return: pandas.DataFrame
-        Containing the data from ECDC
+        Containing the data from Our World In Data
     """
 
-    ecdc_data = pd.read_csv(ECDC_DATA_URL, encoding='utf_8')
-    ecdc_data['dateRep'] = pd.to_datetime(ecdc_data['dateRep'], format='%d/%m/%Y')
+    owid_data = pd.read_csv(OWID_DATA_URL, encoding='utf_8')
+    owid_data['date'] = pd.to_datetime(owid_data['date'], format='%Y-%m-%d')
 
-    return ecdc_data
+    return owid_data
 
 
 class Country:
@@ -31,13 +31,13 @@ class Country:
     def __init__(self, covid_data, country_name):
 
         # Prepare data
-        country_data = covid_data[covid_data['countriesAndTerritories'] == country_name]
-        country_data.set_index('dateRep', drop=False, inplace=True)
+        country_data = covid_data[covid_data['location'] == country_name]
+        country_data.set_index('date', drop=False, inplace=True)
 
-        self.date = country_data['dateRep'].sort_index()
-        self.cases = country_data['cases'].sort_index()
-        self.deaths = country_data['deaths'].sort_index()
-        self.population = country_data['popData2019'][0]
+        self.date = country_data['date'].sort_index()
+        self.cases = country_data['new_cases'].sort_index()
+        self.deaths = country_data['new_deaths'].sort_index()
+        self.population = country_data['population'][0]
 
     def r_number(self, lag=1, n_days=1):
         """Calculates a simple version of the R-number - the number of additional people infected by each infected
@@ -85,7 +85,7 @@ class Country:
 
 def make_graphs(data, countries, file_name):
     """
-    # TODO write
+    # TODO write documentation
     :param data:
     :param countries:
     :param file_name:
@@ -104,19 +104,21 @@ def make_graphs(data, countries, file_name):
     # 1. Create the figures
 
     # Graph 1 - Active cases
-    hover1 = HoverTool(tooltips=[('date', '$x{%F}'), ('cases', '$y{0,0}k')], formatters={'$x': 'datetime'})
+    hover1 = HoverTool(tooltips=[('country', '$name'), ('date', '$x{%F}'), ('cases', '$y{0,0}k')], formatters={'$x': 'datetime'})
     p1 = figure(width=1200, height=300, title="Active cases", tools=[hover1], x_axis_type="datetime",
                 x_axis_label='date', y_axis_label="thousands of cases")
     p1.xaxis.formatter.months = '%b-%y'
+    p1.y_range.start = 0
 
     # Graph 2 - Cases in previous week per 100k people
-    hover2 = HoverTool(tooltips=[('date', '$x{%F}'), ('cases', '$y{0,0}')], formatters={'$x': 'datetime'})
+    hover2 = HoverTool(tooltips=[('country', '$name'), ('date', '$x{%F}'), ('cases', '$y{0,0}')], formatters={'$x': 'datetime'})
     p2 = figure(width=600, height=300, title="Cases in previous week per 100k people", tools=[hover2],
                 x_axis_type="datetime", x_axis_label='date', y_axis_label='cases')
     p2.xaxis.formatter.days = '%d-%b'
+    p2.y_range.start = 0
 
     # Graph 3 - R-Number
-    hover3 = HoverTool(tooltips=[('date', '$x{%F}'), ('r-number', '$y')], formatters={'$x': 'datetime'})
+    hover3 = HoverTool(tooltips=[('country', '$name'), ('date', '$x{%F}'), ('r-number', '$y')], formatters={'$x': 'datetime'})
     p3 = figure(width=600, height=300, title="R-Number", tools=[hover3], x_axis_type="datetime", x_axis_label='date',
                 y_axis_label='r-number')
     p3.xaxis.formatter.days = '%d-%b'
@@ -132,13 +134,13 @@ def make_graphs(data, countries, file_name):
 
         # Plot graphs 1 - 3
         s1 = my_country.active_cases() / 1000
-        p1.line(s1.index, s1.values, legend_label=country, line_width=2, line_color=colours[i])
+        p1.line(s1.index, s1.values, name=country, legend_label=country, line_width=2, line_color=colours[i])
 
         s2 = my_country.cases_by_population()[-60:]
-        p2.line(s2.index, s2.values, legend_label=country, line_width=2, line_color=colours[i])
+        p2.line(s2.index, s2.values, name=country, legend_label=country, line_width=2, line_color=colours[i])
         
         s3 = my_country.r_number(4, 7)[-60:]
-        p3.line(s3.index, s3.values, legend_label=country, line_width=2, line_color=colours[i])
+        p3.line(s3.index, s3.values, name=country, legend_label=country, line_width=2, line_color=colours[i])
 
         # Graph 4 - Cases
         p4 = figure(width=600, height=200, title=f'{country} - Cases per Day', x_axis_type="datetime",
@@ -168,3 +170,4 @@ def make_graphs(data, countries, file_name):
         [cases, deaths]
     ]))
 
+    # TODO add text with data source

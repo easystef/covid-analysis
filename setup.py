@@ -6,7 +6,7 @@ README = (HERE / 'README.md').read_text()
 
 setup(
     name='local-covid19',
-    version='1.1.0',
+    version='1.1.1',
     description='Graphs Covid-19 data provided by the ECDC',
     long_description=README,
     long_description_content_type='text/markdown',
