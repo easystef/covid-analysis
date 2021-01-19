@@ -37,7 +37,7 @@ class Country:
         self.date = country_data['date'].sort_index()
         self.cases = country_data['new_cases'].sort_index()
         self.deaths = country_data['new_deaths'].sort_index()
-        self.vaccinations = country_data['new_vaccinations'].sort_index()
+        self.vaccinations = country_data['total_vaccinations_per_hundred'].interpolate(method='linear').sort_index()
         self.population = country_data['population'][0]
 
     def r_number(self, lag=1, n_days=1):
@@ -60,6 +60,7 @@ class Country:
 
         return x / x_lag
 
+    @property
     def active_cases(self, recovery_days=14):
         """Calculates the number of active cases at any given point in time.
 
@@ -74,6 +75,7 @@ class Country:
 
         return self.cases.rolling(recovery_days).sum()
 
+    @property
     def cases_by_population(self):
         """The number of cases over the last 7 days per 100k people.
 
@@ -83,6 +85,7 @@ class Country:
 
         return self.cases.rolling(7).sum() / (self.population / 100000)
 
+    @property
     def deaths_by_population(self):
         """The number of cases over the last 7 days per 100k people.
 
@@ -91,15 +94,6 @@ class Country:
         """
 
         return self.deaths.rolling(7).sum() / (self.population / 100000)
-
-    def total_vaccinations_per_hundred(self):
-        """The cumulative number of vaccinations per 100 people in the population
-
-        :return: pandas.Series
-            Resulting number lof vaccinations
-        """
-
-        return self.vaccinations.cumsum() / (self.population / 100)
 
 
 def make_graphs(data, countries, file_name):
@@ -171,19 +165,20 @@ def make_graphs(data, countries, file_name):
         my_country = Country(data, country)
 
         # Plot graphs 1 - 4
-        s1 = my_country.active_cases() / 1000
+        s1 = my_country.active_cases / 1000
         p1.line(s1.index, s1.values, name=country, legend_label=country, line_width=2, line_color=colours[i])
 
-        s2 = my_country.cases_by_population()[-60:]
+        s2 = my_country.cases_by_population[-60:]
         p2.line(s2.index, s2.values, name=country, legend_label=country, line_width=2, line_color=colours[i])
         
         s3 = my_country.r_number(4, 7)[-60:]
         p3.line(s3.index, s3.values, name=country, legend_label=country, line_width=2, line_color=colours[i])
 
-        s4 = my_country.deaths_by_population()[-60:]
+        s4 = my_country.deaths_by_population[-60:]
         p4.line(s4.index, s4.values, name=country, legend_label=country, line_width=2, line_color=colours[i])
 
-        s5 = my_country.total_vaccinations_per_hundred()[-60:]
+        # s5 = my_country.total_vaccinations_per_hundred()[-60:]
+        s5 = my_country.vaccinations[-60:]
         p5.line(s5.index, s5.values, name=country, legend_label=country, line_width=2, line_color=colours[i])
 
         # Graph 6 - Cases
