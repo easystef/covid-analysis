@@ -29,4 +29,13 @@ v1.1.0
 * Structured to be used as a local package
 
 v1.1.1
-* ...
+* Data source switched from ECDC to OWID; a couple of minor improvements.
+
+v1.2.0
+* Graphs added for deaths per 100k people and total vaccinations per 100k people.
+
+v1.2.1
+* Graphs for vaccinations fixed; switched some methods to properties in the Country class.
+
+v1.2.2
+* Formatting in the hovertool for the number of deaths changed to include one decimal place.

@@ -140,7 +140,7 @@ def make_graphs(data, countries, file_name):
     p3.xaxis.formatter.days = '%d-%b'
 
     # Graph 4 - Deaths in previous week per 100k people
-    hover4 = HoverTool(tooltips=[('country', '$name'), ('date', '$x{%F}'), ('deaths', '$y{0,0}')],
+    hover4 = HoverTool(tooltips=[('country', '$name'), ('date', '$x{%F}'), ('deaths', '$y{0.0}')],
                        formatters={'$x': 'datetime'})
     p4 = figure(width=600, height=300, title="Deaths in previous week per 100k people", tools=[hover4],
                 x_axis_type="datetime", x_axis_label='date', y_axis_label='deaths')
