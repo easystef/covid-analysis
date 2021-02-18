@@ -39,3 +39,6 @@ v1.2.1
 
 v1.2.2
 * Formatting in the hovertool for the number of deaths changed to include one decimal place.
+
+v1.2.3
+* URL changed to link to Github rather than OWID directly

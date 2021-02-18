@@ -7,7 +7,7 @@ from bokeh.palettes import Category10
 from bokeh.plotting import figure, output_file, show
 import pandas as pd
 
-OWID_DATA_URL = 'https://covid.ourworldindata.org/data/owid-covid-data.csv'
+OWID_DATA_URL = 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv'
 
 
 def import_owid_data():
